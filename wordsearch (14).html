@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Verse - Powered by Edurary</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="w-full max-w-2xl">
+        <!-- Main Verse Card -->
+        <div class="card bg-white p-8 md:p-10 rounded-xl border-t-4 border-indigo-600">
+            <header class="mb-6 text-center">
+                <h1 class="text-3xl font-extrabold text-gray-800 mb-2">Verse of the Day</h1>
+                <p id="current-date" class="text-xl font-medium text-indigo-600"></p>
+            </header>
+
+            <main class="text-center">
+                <div id="verse-container" class="border-y border-gray-200 py-6 my-6">
+                    <p id="verse-reference" class="text-lg font-semibold text-gray-700 mb-3"></p>
+                    <blockquote id="verse-text" class="italic text-2xl md:text-3xl leading-relaxed text-gray-900">
+                        <!-- Verse content will be injected here -->
+                    </blockquote>
+                </div>
+            </main>
+
+            <footer class="text-center mt-6">
+                <p class="text-sm text-gray-500">
+                    Powered by <span class="font-bold text-indigo-500">Edurary</span>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // --- Verse Data for the Whole Year ---
+        // ADD YOUR CUSTOM VERSES HERE using the format "YYYY-MM-DD"
+        // The script will use the verse corresponding to the current date.
+        const dailyVerses = {
+            "2025-11-24": {
+                reference: "Psalm 23:1",
+                text: "The Lord is my shepherd; I shall not want.",
+            },
+            "2025-11-25": {
+                reference: "Philippians 4:13",
+                text: "I can do all things through Christ who strengthens me.",
+            },
+            "2025-11-26": {
+                reference: "Matthew 6:34",
+                text: "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own.",
+            },
+            "2025-11-27": {
+                reference: "1 Corinthians 16:14",
+                text: "Let all that you do be done in love.",
+            },
+            "2025-11-28": {
+                reference: "Proverbs 3:5-6",
+                text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
+            },
+                "2025-11-29": {
+        reference: "Psalm 46:1",
+        text: "God is our refuge and strength, a very present help in trouble.",
+        theme: "Lament/Trust",
+    },
+    "2025-11-30": {
+        reference: "Philippians 4:13",
+        text: "I can do all things through him who strengthens me.",
+        theme: "Encouragement",
+    },
+    // --- December 2025 ---
+    "2025-12-01": {
+        reference: "Proverbs 4:7",
+        text: "The beginning of wisdom is this: Get wisdom, and whatever you get, get insight.",
+        theme: "Wisdom",
+    },
+    "2025-12-02": {
+        reference: "Isaiah 41:10",
+        text: "Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand.",
+        theme: "Promise",
+    },
+    "2025-12-03": {
+        reference: "Romans 5:8",
+        text: "But God shows his love for us in that while we were still sinners, Christ died for us.",
+        theme: "Love",
+    },
+    "2025-12-04": {
+        reference: "Psalm 30:5",
+        text: "For his anger is but for a moment, and his favor is for a lifetime. Weeping may tarry for the night, but joy comes with the morning.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-05": {
+        reference: "Hebrews 10:24-25",
+        text: "And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another, and all the more as you see the Day drawing near.",
+        theme: "Encouragement",
+    },
+    "2025-12-06": {
+        reference: "Ecclesiastes 7:12",
+        text: "For the protection of wisdom is like the protection of money, and the advantage of knowledge is that wisdom preserves the life of him who has it.",
+        theme: "Wisdom",
+    },
+    "2025-12-07": {
+        reference: "Romans 8:28",
+        text: "And we know that for those who love God all things work together for good, for those who are called according to his purpose.",
+        theme: "Promise",
+    },
+    "2025-12-08": {
+        reference: "John 3:16",
+        text: "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.",
+        theme: "Love",
+    },
+    "2025-12-09": {
+        reference: "2 Corinthians 4:8-9",
+        text: "We are afflicted in every way, but not crushed; perplexed, but not driven to despair; persecuted, but not forsaken; struck down, but not destroyed.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-10": {
+        reference: "Galatians 6:9",
+        text: "And let us not grow weary of doing good, for in due season we will reap, if we do not give up.",
+        theme: "Encouragement",
+    },
+    "2025-12-11": {
+        reference: "Proverbs 1:7",
+        text: "The fear of the Lord is the beginning of knowledge; fools despise wisdom and instruction.",
+        theme: "Wisdom",
+    },
+    "2025-12-12": {
+        reference: "Joshua 1:9",
+        text: "Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go.",
+        theme: "Promise",
+    },
+    "2025-12-13": {
+        reference: "1 John 4:7",
+        text: "Beloved, let us love one another, for love is from God, and whoever loves has been born of God and knows God.",
+        theme: "Love",
+    },
+    "2025-12-14": {
+        reference: "Habakkuk 3:17-18",
+        text: "Though the fig tree should not blossom, nor fruit be on the vines, the produce of the olive fail and the fields yield no food, the flock be cut off from the fold and there be no herd in the stalls, yet I will rejoice in the Lord; I will take joy in the God of my salvation.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-15": {
+        reference: "1 Peter 5:7",
+        text: "Casting all your anxieties on him, because he cares for you.",
+        theme: "Encouragement",
+    },
+    "2025-12-16": {
+        reference: "Proverbs 16:3",
+        text: "Commit your work to the Lord, and your plans will be established.",
+        theme: "Wisdom",
+    },
+    "2025-12-17": {
+        reference: "Philippians 4:19",
+        text: "And my God will supply every need of yours according to his riches in glory in Christ Jesus.",
+        theme: "Promise",
+    },
+    "2025-12-18": {
+        reference: "Colossians 3:14",
+        text: "And above all these put on love, which binds everything together in perfect harmony.",
+        theme: "Love",
+    },
+    "2025-12-19": {
+        reference: "Psalm 142:1-2",
+        text: "With my voice I cry out to the Lord; with my voice I plead for mercy to the Lord. I pour out my complaint before him; I tell my trouble before him.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-20": {
+        reference: "2 Timothy 1:7",
+        text: "for God gave us a spirit not of fear but of power and love and self-control.",
+        theme: "Encouragement",
+    },
+    "2025-12-21": {
+        reference: "Psalm 90:12",
+        text: "So teach us to number our days that we may get a heart of wisdom.",
+        theme: "Wisdom",
+    },
+    "2025-12-22": {
+        reference: "Psalm 37:4",
+        text: "Delight yourself in the Lord, and he will give you the desires of your heart.",
+        theme: "Promise",
+    },
+    "2025-12-23": {
+        reference: "Psalm 136:1",
+        text: "Give thanks to the Lord, for he is good, for his steadfast love endures forever.",
+        theme: "Love",
+    },
+    "2025-12-24": {
+        reference: "Matthew 11:28",
+        text: "Come to me, all who labor and are heavy laden, and I will give you rest.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-25": {
+        reference: "Luke 2:10-11",
+        text: "And the angel said to them, 'Fear not, for behold, I bring you good news of great joy that will be for all the people. For unto you is born this day in the city of David a Savior, who is Christ the Lord.'",
+        theme: "Encouragement",
+    },
+    "2025-12-26": {
+        reference: "Proverbs 19:20",
+        text: "Listen to advice and accept instruction, that you may gain wisdom in the future.",
+        theme: "Wisdom",
+    },
+    "2025-12-27": {
+        reference: "1 John 5:14",
+        text: "And this is the confidence that we have in him, that if we ask anything according to his will, he hears us.",
+        theme: "Promise",
+    },
+    "2025-12-28": {
+        reference: "Romans 12:9-10",
+        text: "Let love be genuine. Abhor what is evil; hold fast to what is good. Love one another with brotherly affection. Outdo one another in showing honor.",
+        theme: "Love",
+    },
+    "2025-12-29": {
+        reference: "Psalm 121:1-2",
+        text: "I lift up my eyes to the hills. From where does my help come? My help comes from the Lord, who made heaven and earth.",
+        theme: "Lament/Trust",
+    },
+    "2025-12-30": {
+        reference: "1 Thessalonians 5:11",
+        text: "Therefore encourage one another and build one another up, just as you are doing.",
+        theme: "Encouragement",
+    },
+    "2025-12-31": {
+        reference: "Proverbs 29:18",
+        text: "Where there is no prophetic vision the people cast off restraint, but blessed is he who keeps the law.",
+        theme: "Wisdom",
+    },
+        "2026-01-01": { reference: "Proverbs 8:11", text: "For wisdom is better than jewels, and all that you may desire cannot compare with her.", theme: "Wisdom" },
+    "2026-01-02": { reference: "John 10:28", text: "I give them eternal life, and they will never perish, and no one will snatch them out of my hand.", theme: "Promise" },
+    "2026-01-03": { reference: "Romans 13:10", text: "Love does no wrong to a neighbor; therefore love is the fulfilling of the law.", theme: "Love" },
+    "2026-01-04": { reference: "Psalm 10:14", text: "But you do see, for you note mischief and vexation, that you may take it into your hands; to you the helpless commits himself; you have been the helper of the fatherless.", theme: "Lament/Trust" },
+    "2026-01-05": { reference: "Deuteronomy 31:6", text: "Be strong and courageous. Do not fear or be in dread of them, for it is the Lord your God who goes with you. He will not leave you or forsake you.", theme: "Encouragement" },
+    "2026-01-06": { reference: "Proverbs 16:16", text: "How much better to get wisdom than gold! To get understanding is to be chosen rather than silver.", theme: "Wisdom" },
+    "2026-01-07": { reference: "Psalm 50:15", text: "and call upon me in the day of trouble; I will deliver you, and you shall glorify me.", theme: "Promise" },
+    "2026-01-08": { reference: "1 Corinthians 13:13", text: "So now faith, hope, and love abide, these three; but the greatest of these is love.", theme: "Love" },
+    "2026-01-09": { reference: "Psalm 42:11", text: "Why are you cast down, O my soul, and why are you in turmoil within me? Hope in God; for I shall again praise him, my salvation and my God.", theme: "Lament/Trust" },
+    "2026-01-10": { reference: "2 Timothy 4:18", text: "The Lord will rescue me from every evil deed and bring me safely into his heavenly kingdom. To him be the glory forever and ever. Amen.", theme: "Encouragement" },
+    "2026-01-11": { reference: "Proverbs 14:8", text: "The wisdom of the prudent is to discern his way, but the folly of fools is deceit.", theme: "Wisdom" },
+    "2026-01-12": { reference: "Matthew 28:20", text: "…and behold, I am with you always, to the end of the age.", theme: "Promise" },
+    "2026-01-13": { reference: "1 John 4:18", text: "There is no fear in love, but perfect love casts out fear. For fear has to do with punishment, and whoever fears has not been perfected in love.", theme: "Love" },
+    "2026-01-14": { reference: "Psalm 116:5", text: "Gracious is the Lord, and righteous; our God is merciful.", theme: "Lament/Trust" },
+    "2026-01-15": { reference: "Philippians 3:14", text: "I press on toward the goal for the prize of the upward call of God in Christ Jesus.", theme: "Encouragement" },
+    "2026-01-16": { reference: "Proverbs 11:2", text: "When pride comes, then comes disgrace, but with the humble is wisdom.", theme: "Wisdom" },
+    "2026-01-17": { reference: "Psalm 138:8", text: "The Lord will fulfill his purpose for me; your steadfast love, O Lord, endures forever. Do not forsake the work of your hands.", theme: "Promise" },
+    "2026-01-18": { reference: "Romans 12:9", text: "Let love be genuine. Abhor what is evil; hold fast to what is good.", theme: "Love" },
+    "2026-01-19": { reference: "Psalm 143:1", text: "Hear my prayer, O Lord; give ear to my pleas for mercy! In your faithfulness answer me, in your righteousness!", theme: "Lament/Trust" },
+    "2026-01-20": { reference: "Hebrews 12:1", text: "Therefore, since we are surrounded by so great a cloud of witnesses, let us also lay aside every weight, and sin which clings so closely, and let us run with endurance the race that is set before us.", theme: "Encouragement" },
+    "2026-01-21": { reference: "Proverbs 10:14", text: "The wise lay up knowledge, but the mouths of a fool bring ruin near.", theme: "Wisdom" },
+    "2026-01-22": { reference: "1 John 1:9", text: "If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.", theme: "Promise" },
+    "2026-01-23": { reference: "Galatians 5:14", text: "For the whole law is fulfilled in one word: “You shall love your neighbor as yourself.”", theme: "Love" },
+    "2026-01-24": { reference: "Psalm 40:1-2", text: "I waited patiently for the Lord; he inclined to me and heard my cry. He drew me up from the pit of destruction, out of the miry bog, and set my feet upon a rock, making my steps secure.", theme: "Lament/Trust" },
+    "2026-01-25": { reference: "Romans 8:37", text: "No, in all these things we are more than conquerors through him who loved us.", theme: "Encouragement" },
+    "2026-01-26": { reference: "Proverbs 15:1", text: "A soft answer turns away wrath, but a harsh word stirs up anger.", theme: "Wisdom" },
+    "2026-01-27": { reference: "John 6:37", text: "All that the Father gives me will come to me, and whoever comes to me I will never cast out.", theme: "Promise" },
+    "2026-01-28": { reference: "1 Corinthians 16:14", text: "Let all that you do be done in love.", theme: "Love" },
+    "2026-01-29": { reference: "Psalm 147:3", text: "He heals the brokenhearted and binds up their wounds.", theme: "Lament/Trust" },
+    "2026-01-30": { reference: "Matthew 19:26", text: "But Jesus looked at them and said, “With man this is impossible, but with God all things are possible.”", theme: "Encouragement" },
+    "2026-01-31": { reference: "Proverbs 9:10", text: "The fear of the Lord is the beginning of wisdom, and the knowledge of the Holy One is insight.", theme: "Wisdom" },
+
+    // --- February 2026 (28 days) ---
+    "2026-02-01": { reference: "Matthew 6:34", text: "Therefore do not be anxious about tomorrow, for tomorrow will be anxious for itself. Sufficient for the day is its own trouble.", theme: "Promise" },
+    "2026-02-02": { reference: "Ephesians 4:32", text: "Be kind to one another, tenderhearted, forgiving one another, as God in Christ forgave you.", theme: "Love" },
+    "2026-02-03": { reference: "Psalm 62:5-6", text: "For God alone, O my soul, wait in silence, for my hope is from him. He only is my rock and my salvation, my fortress; I shall not be shaken.", theme: "Lament/Trust" },
+    "2026-02-04": { reference: "1 Corinthians 10:13", text: "No temptation has overtaken you that is not common to man. God is faithful, and he will not let you be tempted beyond your ability, but with the temptation he will also provide the way of escape, that you may be able to endure it.", theme: "Encouragement" },
+    "2026-02-05": { reference: "Proverbs 24:3-4", text: "By wisdom a house is built, and by understanding it is established; by knowledge the rooms are filled with all precious and pleasant riches.", theme: "Wisdom" },
+    "2026-02-06": { reference: "Hebrews 13:5", text: "Keep your life free from love of money, and be content with what you have, for he has said, 'I will never leave you nor forsake you.'", theme: "Promise" },
+    "2026-02-07": { reference: "Romans 5:5", text: "and hope does not put us to shame, because God's love has been poured into our hearts through the Holy Spirit who has been given to us.", theme: "Love" },
+    "2026-02-08": { reference: "Psalm 130:5", text: "I wait for the Lord, my soul waits, and in his word I hope.", theme: "Lament/Trust" },
+    "2026-02-09": { reference: "2 Thessalonians 3:3", text: "But the Lord is faithful. He will establish you and guard you against the evil one.", theme: "Encouragement" },
+    "2026-02-10": { reference: "Proverbs 4:18", text: "But the path of the righteous is like the light of dawn, which shines brighter and brighter until full day.", theme: "Wisdom" },
+    "2026-02-11": { reference: "Isaiah 58:11", text: "And the Lord will guide you continually and satisfy your desire in scorched places and make your bones strong; and you shall be like a watered garden, like a spring of water, whose waters do not fail.", theme: "Promise" },
+    "2026-02-12": { reference: "1 John 2:5", text: "but whoever keeps his word, in him truly the love of God is perfected. By this we may know that we are in him.", theme: "Love" },
+    "2026-02-13": { reference: "Psalm 107:28-29", text: "Then they cried to the Lord in their trouble, and he delivered them from their distress. He made the storm be still, and the waves of the sea were hushed.", theme: "Lament/Trust" },
+    "2026-02-14": { reference: "3 John 1:4", text: "I have no greater joy than to hear that my children are walking in the truth.", theme: "Encouragement" },
+    "2026-02-15": { reference: "Proverbs 18:15", text: "An intelligent heart acquires knowledge, and the ear of the wise seeks knowledge.", theme: "Wisdom" },
+    "2026-02-16": { reference: "James 1:17", text: "Every good gift and every perfect gift is from above, coming down from the Father of lights with whom there is no variation or shadow due to change.", theme: "Promise" },
+    "2026-02-17": { reference: "1 Thessalonians 5:13", text: "and to esteem them very highly in love because of their work. Be at peace among yourselves.", theme: "Love" },
+    "2026-02-18": { reference: "Psalm 126:5", text: "Those who sow in tears shall reap with shouts of joy!", theme: "Lament/Trust" },
+    "2026-02-19": { reference: "Romans 12:12", text: "Rejoice in hope, be patient in tribulation, be constant in prayer.", theme: "Encouragement" },
+    "2026-02-20": { reference: "Proverbs 28:26", text: "Whoever trusts in his own mind is a fool, but he who walks in wisdom will be delivered.", theme: "Wisdom" },
+    "2026-02-21": { reference: "2 Corinthians 9:8", text: "And God is able to make all grace abound to you, so that having all sufficiency in all things at all times, you may abound in every good work.", theme: "Promise" },
+    "2026-02-22": { reference: "Matthew 22:39", text: "And a second is like it: You shall love your neighbor as yourself.", theme: "Love" },
+    "2026-02-23": { reference: "Psalm 34:18", text: "The Lord is near to the brokenhearted and saves the crushed in spirit.", theme: "Lament/Trust" },
+    "2026-02-24": { reference: "Psalm 4:8", text: "In peace I will both lie down and sleep; for you alone, O Lord, make me dwell in safety.", theme: "Encouragement" },
+    "2026-02-25": { reference: "Proverbs 20:3", text: "It is an honor for a man to keep aloof from strife, but every fool will be quarreling.", theme: "Wisdom" },
+    "2026-02-26": { reference: "John 16:33", text: "I have said these things to you, that in me you may have peace. In the world you will have tribulation. But take heart; I have overcome the world.", theme: "Promise" },
+    "2026-02-27": { reference: "1 John 3:16", text: "By this we know love, that he laid down his life for us, and we ought to lay down our lives for the brothers.", theme: "Love" },
+    "2026-02-28": { reference: "Psalm 145:18-19", text: "The Lord is near to all who call on him, to all who call on him in truth. He fulfills the desire of those who fear him; he also hears their cry and saves them.", theme: "Lament/Trust" },
+
+    // --- March 2026 (31 days) ---
+    "2026-03-01": { reference: "2 Chronicles 15:7", text: "But as for you, be strong and do not give up, for your work will be rewarded.", theme: "Encouragement" },
+    "2026-03-02": { reference: "Proverbs 15:22", text: "Without counsel plans fail, but with many advisers they succeed.", theme: "Wisdom" },
+    "2026-03-03": { reference: "Jeremiah 32:27", text: "Behold, I am the Lord, the God of all flesh. Is anything too hard for me?", theme: "Promise" },
+    "2026-03-04": { reference: "1 John 4:12", text: "No one has ever seen God; if we love one another, God abides in us and his love is perfected in us.", theme: "Love" },
+    "2026-03-05": { reference: "Psalm 57:1", text: "Be merciful to me, O God, be merciful to me, for in you my soul takes refuge; in the shadow of your wings I will take refuge, till the storms of destruction pass by.", theme: "Lament/Trust" },
+    "2026-03-06": { reference: "Ephesians 3:20-21", text: "Now to him who is able to do far more abundantly than all that we ask or think, according to the power at work within us, to him be glory in the church and in Christ Jesus throughout all generations, forever and ever. Amen.", theme: "Encouragement" },
+    "2026-03-07": { reference: "Proverbs 21:30", text: "No wisdom, no understanding, no counsel can avail against the Lord.", theme: "Wisdom" },
+    "2026-03-08": { reference: "Hebrews 10:23", text: "Let us hold fast the confession of our hope without wavering, for he who promised is faithful.", theme: "Promise" },
+    "2026-03-09": { reference: "Romans 8:35", text: "Who shall separate us from the love of Christ? Shall tribulation, or distress, or persecution, or famine, or nakedness, or danger, or sword?", theme: "Love" },
+    "2026-03-10": { reference: "Psalm 56:3", text: "When I am afraid, I put my trust in you.", theme: "Lament/Trust" },
+    "2026-03-11": { reference: "Isaiah 40:29", text: "He gives power to the faint, and to him who has no might he increases strength.", theme: "Encouragement" },
+    "2026-03-12": { reference: "Proverbs 12:15", text: "The way of a fool is right in his own eyes, but a wise man listens to advice.", theme: "Wisdom" },
+    "2026-03-13": { reference: "2 Corinthians 7:1", text: "Since we have these promises, beloved, let us cleanse ourselves from every defilement of body and spirit, bringing holiness to completion in the fear of God.", theme: "Promise" },
+    "2026-03-14": { reference: "1 Peter 1:22", text: "Having purified your souls by your obedience to the truth for a sincere brotherly love, love one another earnestly from a pure heart.", theme: "Love" },
+    "2026-03-15": { reference: "Lamentations 3:22-23", text: "The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.", theme: "Lament/Trust" },
+    "2026-03-16": { reference: "2 Timothy 2:1", text: "You then, my child, be strengthened by the grace that is in Christ Jesus.", theme: "Encouragement" },
+    "2026-03-17": { reference: "Proverbs 13:10", text: "By insolence comes nothing but strife, but with those who take advice is wisdom.", theme: "Wisdom" },
+    "2026-03-18": { reference: "Psalm 27:14", text: "Wait for the Lord; be strong, and let your heart take courage; wait for the Lord!", theme: "Promise" },
+    "2026-03-19": { reference: "Colossians 3:12", text: "Put on then, as God's chosen ones, holy and beloved, compassionate hearts, kindness, humility, meekness, and patience.", theme: "Love" },
+    "2026-03-20": { reference: "Psalm 77:1-2", text: "I cry aloud to God, aloud to God, and he will hear me. In the day of my trouble I seek the Lord; in the night my hand is stretched out without wearying; my soul refuses to be comforted.", theme: "Lament/Trust" },
+    "2026-03-21": { reference: "Jude 1:24", text: "Now to him who is able to keep you from stumbling and to present you blameless before the presence of his glory with great joy...", theme: "Encouragement" },
+    "2026-03-22": { reference: "Proverbs 17:1", text: "Better is a dry morsel with quietness than a house full of feasting with strife.", theme: "Wisdom" },
+    "2026-03-23": { reference: "Psalm 118:6", text: "The Lord is on my side; I will not fear. What can man do to me?", theme: "Promise" },
+    "2026-03-24": { reference: "John 15:12", text: "This is my commandment, that you love one another as I have loved you.", theme: "Love" },
+    "2026-03-25": { reference: "Psalm 102:1-2", text: "Hear my prayer, O Lord; let my cry come to you! Do not hide your face from me in the day of my distress! Incline your ear to me; answer me quickly in the day when I call!", theme: "Lament/Trust" },
+    "2026-03-26": { reference: "Joshua 1:5", text: "No man shall be able to stand before you all the days of your life. Just as I was with Moses, so I will be with you. I will not leave you or forsake you.", theme: "Encouragement" },
+    "2026-03-27": { reference: "Proverbs 29:11", text: "A fool gives full vent to his spirit, but a wise man quietly holds it back.", theme: "Wisdom" },
+    "2026-03-28": { reference: "Philippians 1:6", text: "And I am sure of this, that he who began a good work in you will bring it to completion at the day of Jesus Christ.", theme: "Promise" },
+    "2026-03-29": { reference: "Romans 12:10", text: "Love one another with brotherly affection. Outdo one another in showing honor.", theme: "Love" },
+    "2026-03-30": { reference: "Psalm 125:1", text: "Those who trust in the Lord are like Mount Zion, which cannot be moved, but abides forever.", theme: "Lament/Trust" },
+    "2026-03-31": { reference: "2 Corinthians 4:16", text: "So we do not lose heart. Though our outer self is wasting away, yet our inner self is being renewed day by day.", theme: "Encouragement" },
+
+    // --- April 2026 (30 days) ---
+    "2026-04-01": { reference: "Proverbs 19:8", text: "Whoever gets sense loves his own soul; he that keeps understanding will discover good.", theme: "Wisdom" },
+    "2026-04-02": { reference: "Isaiah 43:1-2", text: "Fear not, for I have redeemed you; I have called you by name, you are mine. When you pass through the waters, I will be with you; and through the rivers, they shall not overwhelm you.", theme: "Promise" },
+    "2026-04-03": { reference: "1 John 4:8", text: "Anyone who does not love does not know God, because God is love.", theme: "Love" },
+    "2026-04-04": { reference: "Psalm 142:5", text: "I cried to you, O Lord; I said, 'You are my refuge, my portion in the land of the living.'", theme: "Lament/Trust" },
+    "2026-04-05": { reference: "Ephesians 6:10", text: "Finally, be strong in the Lord and in the strength of his might.", theme: "Encouragement" },
+    "2026-04-06": { reference: "Proverbs 2:10-11", text: "for wisdom will come into your heart, and knowledge will be pleasant to your soul; discretion will watch over you, understanding will guard you.", theme: "Wisdom" },
+    "2026-04-07": { reference: "Psalm 119:49-50", text: "Remember your word to your servant, in which you have made me hope. This is my comfort in my affliction, that your promise gives me life.", theme: "Promise" },
+    "2026-04-08": { reference: "1 Peter 2:17", text: "Honor everyone. Love the brotherhood. Fear God. Honor the emperor.", theme: "Love" },
+    "2026-04-09": { reference: "Psalm 13:1-2", text: "How long, O Lord? Will you forget me forever? How long will you hide your face from me? How long must I take counsel in my soul and have sorrow in my heart all the day?", theme: "Lament/Trust" },
+    "2026-04-10": { reference: "2 Corinthians 12:9", text: "But he said to me, 'My grace is sufficient for you, for my power is made perfect in weakness.' Therefore I will boast all the more gladly of my weaknesses, so that the power of Christ may rest upon me.", theme: "Encouragement" },
+    "2026-04-11": { reference: "Proverbs 20:29", text: "The glory of young men is their strength, but the splendor of old men is their gray hair.", theme: "Wisdom" },
+    "2026-04-12": { reference: "Romans 8:38-39", text: "For I am sure that neither death nor life, nor angels nor rulers, nor things present nor things to come, nor powers, nor height nor depth, nor anything else in all creation, will be able to separate us from the love of God in Christ Jesus our Lord.", theme: "Promise" },
+    "2026-04-13": { reference: "Matthew 5:44", text: "But I say to you, Love your enemies and pray for those who persecute you.", theme: "Love" },
+    "2026-04-14": { reference: "Psalm 4:1", text: "Answer me when I call, O God of my righteousness! You have given me relief when I was in distress. Be gracious to me and hear my prayer!", theme: "Lament/Trust" },
+    "2026-04-15": { reference: "Philippians 4:6-7", text: "do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus.", theme: "Encouragement" },
+    "2026-04-16": { reference: "Proverbs 30:5", text: "Every word of God proves true; he is a shield to those who take refuge in him.", theme: "Wisdom" },
+    "2026-04-17": { reference: "Isaiah 49:15", text: "Can a woman forget her nursing child, that she should have no compassion on the son of her womb? Even these may forget, yet I will not forget you.", theme: "Promise" },
+    "2026-04-18": { reference: "Galatians 5:13", text: "For you were called to freedom, brothers. Only do not use your freedom as an opportunity for the flesh, but through love serve one another.", theme: "Love" },
+    "2026-04-19": { reference: "Psalm 73:2-3", text: "But as for me, my feet had almost stumbled, my steps had nearly slipped. For I was envious of the arrogant when I saw the prosperity of the wicked.", theme: "Lament/Trust" },
+    "2026-04-20": { reference: "Romans 14:19", text: "So then let us pursue what makes for peace and for mutual upbuilding.", theme: "Encouragement" },
+    "2026-04-21": { reference: "Proverbs 18:21", text: "Death and life are in the power of the tongue, and those who love it will eat its fruits.", theme: "Wisdom" },
+    "2026-04-22": { reference: "Luke 12:7", text: "Why, even the hairs of your head are all numbered. Fear not; you are of more value than many sparrows.", theme: "Promise" },
+    "2026-04-23": { reference: "Romans 13:8", text: "Owe no one anything, except to love one another, for the one who loves another has fulfilled the law.", theme: "Love" },
+    "2026-04-24": { reference: "Psalm 139:23-24", text: "Search me, O God, and know my heart! Try me and know my thoughts! And see if there be any wicked way in me, and lead me in the way everlasting!", theme: "Lament/Trust" },
+    "2026-04-25": { reference: "Ephesians 4:29", text: "Let no corrupting talk come out of your mouths, but only such as is good for building up, as fits the occasion, that it may give grace to those who hear.", theme: "Encouragement" },
+    "2026-04-26": { reference: "Proverbs 15:28", text: "The heart of the righteous ponders how to answer, but the mouth of the wicked pours out evil things.", theme: "Wisdom" },
+    "2026-04-27": { reference: "Psalm 145:13", text: "Your kingdom is an everlasting kingdom, and your dominion endures throughout all generations. The Lord is faithful in all his words and kind in all his deeds.", theme: "Promise" },
+    "2026-04-28": { reference: "2 John 1:6", text: "And this is love, that we walk according to his commandments; this is the commandment, just as you have heard from the beginning, so that you should walk in it.", theme: "Love" },
+    "2026-04-29": { reference: "Psalm 13:3-4", text: "Consider and answer me, O Lord my God; light up my eyes, lest I sleep the sleep of death, lest my enemy say, 'I have prevailed over him,' and my foes rejoice because I am shaken.", theme: "Lament/Trust" },
+    "2026-04-30": { reference: "1 Timothy 4:12", text: "Let no one despise you for your youth, but set the believers an example in speech, in conduct, in love, in faith, in purity.", theme: "Encouragement" },
+
+    // --- May 2026 (31 days) ---
+    "2026-05-01": { reference: "Proverbs 4:13", text: "Keep hold of instruction; do not let go; guard her, for she is your life.", theme: "Wisdom" },
+    "2026-05-02": { reference: "Isaiah 44:3", text: "For I will pour water on the thirsty land, and streams on the dry ground; I will pour my Spirit upon your offspring, and my blessing upon your descendants.", theme: "Promise" },
+    "2026-05-03": { reference: "John 4:24", text: "God is spirit, and those who worship him must worship in spirit and truth.", theme: "Love" },
+    "2026-05-04": { reference: "Psalm 86:3", text: "Be gracious to me, O Lord, for to you do I cry all the day.", theme: "Lament/Trust" },
+    "2026-05-05": { reference: "Hebrews 13:6", text: "So we can confidently say, 'The Lord is my helper; I will not fear; what can man do to me?'", theme: "Encouragement" },
+    "2026-05-06": { reference: "Proverbs 24:14", text: "Know that wisdom is such for your soul; if you find it, there will be a future, and your hope will not be cut off.", theme: "Wisdom" },
+    "2026-05-07": { reference: "Psalm 37:24", text: "though he fall, he shall not be utterly cast down, for the Lord upholds his hand.", theme: "Promise" },
+    "2026-05-08": { reference: "Romans 15:5", text: "May the God of endurance and encouragement grant you to live in harmony with one another, in accord with Christ Jesus.", theme: "Love" },
+    "2026-05-09": { reference: "Psalm 120:1", text: "In my distress I called to the Lord, and he answered me.", theme: "Lament/Trust" },
+    "2026-05-10": { reference: "2 Corinthians 13:11", text: "Finally, brothers, rejoice. Aim for restoration, comfort one another, agree with one another, live in peace; and the God of love and peace will be with you.", theme: "Encouragement" },
+    "2026-05-11": { reference: "Proverbs 16:9", text: "The heart of man plans his way, but the Lord establishes his steps.", theme: "Wisdom" },
+    "2026-05-12": { reference: "Isaiah 41:13", text: "For I, the Lord your God, hold your right hand; it is I who say to you, 'Fear not, I am the one who helps you.'", theme: "Promise" },
+    "2026-05-13": { reference: "John 17:26", text: "I made known to them your name, and I will continue to make it known, that the love with which you have loved me may be in them, and I in them.", theme: "Love" },
+    "2026-05-14": { reference: "Psalm 140:1-2", text: "Deliver me, O Lord, from evil men; preserve me from violent men, who plan evil things in their heart and stir up wars continually.", theme: "Lament/Trust" },
+    "2026-05-15": { reference: "1 Peter 2:9", text: "But you are a chosen race, a royal priesthood, a holy nation, a people for his own possession, that you may proclaim the excellencies of him who called you out of darkness into his marvelous light.", theme: "Encouragement" },
+    "2026-05-16": { reference: "Proverbs 14:12", text: "There is a way that seems right to a man, but its end is the way to death.", theme: "Wisdom" },
+    "2026-05-17": { reference: "Jeremiah 29:13", text: "You will seek me and find me, when you seek me with all your heart.", theme: "Promise" },
+    "2026-05-18": { reference: "1 John 4:10", text: "In this is love, not that we have loved God but that he loved us and sent his Son to be the propitiation for our sins.", theme: "Love" },
+    "2026-05-19": { reference: "Psalm 69:1-2", text: "Save me, O God, for the waters have come up to my neck. I sink in deep mire, where there is no foothold; I have come into deep waters, and the flood sweeps over me.", theme: "Lament/Trust" },
+    "2026-05-20": { reference: "1 Corinthians 15:58", text: "Therefore, my beloved brothers, be steadfast, immovable, always abounding in the work of the Lord, knowing that in the Lord your labor is not in vain.", theme: "Encouragement" },
+    "2026-05-21": { reference: "Proverbs 28:13", text: "Whoever conceals his transgressions will not prosper, but he who confesses and forsakes them will obtain mercy.", theme: "Wisdom" },
+    "2026-05-22": { reference: "Romans 4:20-21", text: "No distrust made him waver concerning the promise of God, but he grew strong in his faith as he gave glory to God, fully convinced that God was able to do what he had promised.", theme: "Promise" },
+    "2026-05-23": { reference: "Romans 12:15", text: "Rejoice with those who rejoice, weep with those who weep.", theme: "Love" },
+    "2026-05-24": { reference: "Psalm 3:3-4", text: "But you, O Lord, are a shield about me, my glory, and the lifter of my head. I cried aloud to the Lord, and he answered me from his holy hill.", theme: "Lament/Trust" },
+    "2026-05-25": { reference: "Galatians 6:2", text: "Bear one another's burdens, and so fulfill the law of Christ.", theme: "Encouragement" },
+    "2026-05-26": { reference: "Proverbs 1:33", text: "but whoever listens to me will dwell secure and will be at ease, without dread of disaster.", theme: "Wisdom" },
+    "2026-05-27": { reference: "Isaiah 54:10", text: "For the mountains may depart and the hills be removed, but my steadfast love shall not depart from you, and my covenant of peace shall not be removed, says the Lord, who has compassion on you.", theme: "Promise" },
+    "2026-05-28": { reference: "1 John 4:16", text: "So we have come to know and to believe the love that God has for us. God is love, and whoever abides in love abides in God, and God abides in him.", theme: "Love" },
+    "2026-05-29": { reference: "Psalm 10:17", text: "O Lord, you hear the desire of the afflicted; you will strengthen their heart; you will incline your ear.", theme: "Lament/Trust" },
+    "2026-05-30": { reference: "Hebrews 10:35-36", text: "Therefore do not throw away your confidence, which has a great reward. For you have need of endurance, so that when you have done the will of God you may receive what is promised.", theme: "Encouragement" },
+    "2026-05-31": { reference: "Proverbs 16:1", text: "The plans of the heart belong to man, but the answer of the tongue is from the Lord.", theme: "Wisdom" },
+
+    // --- June 2026 (30 days) ---
+    "2026-06-01": { reference: "Isaiah 26:3", text: "You keep him in perfect peace whose mind is stayed on you, because he trusts in you.", theme: "Promise" },
+    "2026-06-02": { reference: "Colossians 3:13", text: "bearing with one another and, if one has a complaint against another, forgiving each other; as the Lord has forgiven you, so you also must forgive.", theme: "Love" },
+    "2026-06-03": { reference: "Psalm 71:1-2", text: "In you, O Lord, do I take refuge; let me never be put to shame! In your righteousness deliver me and rescue me; incline your ear to me, and save me!", theme: "Lament/Trust" },
+    "2026-06-04": { reference: "2 Corinthians 9:7", text: "Each one must give as he has decided in his heart, not reluctantly or under compulsion, for God loves a cheerful giver.", theme: "Encouragement" },
+    "2026-06-05": { reference: "Proverbs 23:23", text: "Buy truth, and do not sell it; buy wisdom, instruction, and understanding.", theme: "Wisdom" },
+    "2026-06-06": { reference: "Psalm 37:3", text: "Trust in the Lord, and do good; dwell in the land and befriend faithfulness.", theme: "Promise" },
+    "2026-06-07": { reference: "Romans 15:7", text: "Therefore welcome one another as Christ has welcomed you, for the glory of God.", theme: "Love" },
+    "2026-06-08": { reference: "Psalm 123:1-2", text: "To you I lift up my eyes, O you who are enthroned in the heavens! Behold, as the eyes of servants look to the hand of their master, so our eyes look to the Lord our God, till he has mercy upon us.", theme: "Lament/Trust" },
+    "2026-06-09": { reference: "Hebrews 4:16", text: "Let us then with confidence draw near to the throne of grace, that we may receive mercy and find grace to help in time of need.", theme: "Encouragement" },
+    "2026-06-10": { reference: "Proverbs 15:24", text: "The path of life leads upward for the prudent, that he may turn away from Sheol beneath.", theme: "Wisdom" },
+    "2026-06-11": { reference: "Romans 8:32", text: "He who did not spare his own Son but gave him up for us all, how will he not also with him graciously give us all things?", theme: "Promise" },
+    "2026-06-12": { reference: "1 John 4:11", text: "Beloved, if God so loved us, we also ought to love one another.", theme: "Love" },
+    "2026-06-13": { reference: "Psalm 143:7-8", text: "Answer me quickly, O Lord! My spirit fails! Hide not your face from me, lest I be like those who go down to the pit. Let me hear in the morning of your steadfast love, for in you I trust.", theme: "Lament/Trust" },
+    "2026-06-14": { reference: "Philippians 2:3-4", text: "Do nothing from selfish ambition or conceit, but in humility count others more significant than yourselves. Let each of you look not only to his own interests, but also to the interests of others.", theme: "Encouragement" },
+    "2026-06-15": { reference: "Proverbs 10:23", text: "Doing wrong is like a joke to a fool, but wisdom is pleasure to a man of understanding.", theme: "Wisdom" },
+    "2026-06-16": { reference: "Jeremiah 33:3", text: "'Call to me and I will answer you, and will tell you great and hidden things that you have not known.'", theme: "Promise" },
+    "2026-06-17": { reference: "Ephesians 5:25", text: "Husbands, love your wives, as Christ loved the church and gave himself up for her.", theme: "Love" },
+    "2026-06-18": { reference: "Psalm 5:1-2", text: "Give ear to my words, O Lord; consider my groaning. Give attention to the sound of my cry, my King and my God, for to you do I pray.", theme: "Lament/Trust" },
+    "2026-06-19": { reference: "1 Peter 5:10", text: "And after you have suffered a little while, the God of all grace, who has called you to his eternal glory in Christ, will himself restore, confirm, strengthen, and establish you.", theme: "Encouragement" },
+    "2026-06-20": { reference: "Proverbs 13:14", text: "The teaching of the wise is a fountain of life, that one may turn away from the snares of death.", theme: "Wisdom" },
+    "2026-06-21": { reference: "2 Timothy 2:13", text: "if we are faithless, he remains faithful—for he cannot deny himself.", theme: "Promise" },
+    "2026-06-22": { reference: "Romans 13:9", text: "For the commandments, “You shall not commit adultery, You shall not murder, You shall not steal, You shall not covet,” and any other commandment, are summed up in this word: “You shall love your neighbor as yourself.”", theme: "Love" },
+    "2026-06-23": { reference: "Psalm 43:3-4", text: "Send out your light and your truth; let them lead me; let them bring me to your holy hill and to your dwelling! Then I will go to the altar of God, to God my exceeding joy.", theme: "Lament/Trust" },
+    "2026-06-24": { reference: "2 Corinthians 5:17", text: "Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come.", theme: "Encouragement" },
+    "2026-06-25": { reference: "Proverbs 2:3-5", text: "yes, if you call out for insight and raise your voice for understanding, if you seek it like silver and search for it as for hidden treasures, then you will understand the fear of the Lord and find the knowledge of God.", theme: "Wisdom" },
+    "2026-06-26": { reference: "Psalm 9:10", text: "And those who know your name put their trust in you, for you, O Lord, have not forsaken those who seek you.", theme: "Promise" },
+    "2026-06-27": { reference: "1 John 4:20", text: "If anyone says, “I love God,” yet hates his brother, he is a liar; for anyone who does not love his brother, whom he has seen, cannot love God, whom he has not seen.", theme: "Love" },
+    "2026-06-28": { reference: "Psalm 121:7-8", text: "The Lord will keep you from all evil; he will keep your life. The Lord will keep your going out and your coming in from this time forth and forevermore.", theme: "Lament/Trust" },
+    "2026-06-29": { reference: "Isaiah 50:7", text: "But the Lord God helps me; therefore I have not been disgraced; therefore I have set my face like a flint, and I know that I shall not be put to shame.", theme: "Encouragement" },
+    "2026-06-30": { reference: "Proverbs 22:1", text: "A good name is to be chosen rather than great riches, and favor is better than silver or gold.", theme: "Wisdom" },
+
+    // --- July 2026 (31 days) ---
+    "2026-07-01": { reference: "Psalm 34:19", text: "Many are the afflictions of the righteous, but the Lord delivers him out of them all.", theme: "Promise" },
+    "2026-07-02": { reference: "Romans 13:9-10", text: "The commandments are summed up in this one rule: 'Love your neighbor as yourself.' Love does no wrong to a neighbor; therefore love is the fulfilling of the law.", theme: "Love" },
+    "2026-07-03": { reference: "Psalm 73:28", text: "But for me it is good to be near God; I have made the Lord God my refuge, that I may tell of all your works.", theme: "Lament/Trust" },
+    "2026-07-04": { reference: "1 Timothy 6:11-12", text: "But as for you, O man of God, flee these things. Pursue righteousness, godliness, faith, love, steadfastness, gentleness. Fight the good fight of the faith.", theme: "Encouragement" },
+    "2026-07-05": { reference: "Proverbs 11:14", text: "Where there is no guidance, a people falls, but in an abundance of counselors there is safety.", theme: "Wisdom" },
+    "2026-07-06": { reference: "Matthew 5:5", text: "Blessed are the meek, for they shall inherit the earth.", theme: "Promise" },
+    "2026-07-07": { reference: "1 Corinthians 8:1", text: "Now concerning food offered to idols: we know that 'all of us possess knowledge.' Knowledge puffs up, but love builds up.", theme: "Love" },
+    "2026-07-08": { reference: "Psalm 77:11", text: "I will remember the deeds of the Lord; yes, I will remember your wonders of old.", theme: "Lament/Trust" },
+    "2026-07-09": { reference: "2 Thessalonians 2:16-17", text: "Now may our Lord Jesus Christ himself, and God our Father, who loved us and gave us eternal comfort and good hope through grace, comfort your hearts and establish them in every good work and word.", theme: "Encouragement" },
+    "2026-07-10": { reference: "Proverbs 14:1", text: "The wisest of women builds her house, but with her own hands the foolish one tears hers down.", theme: "Wisdom" },
+    "2026-07-11": { reference: "Psalm 126:3", text: "The Lord has done great things for us; we are glad.", theme: "Promise" },
+    "2026-07-12": { reference: "Ephesians 4:15", text: "Rather, speaking the truth in love, we are to grow up in every way into him who is the head, into Christ.", theme: "Love" },
+    "2026-07-13": { reference: "Psalm 5:3", text: "O Lord, in the morning you hear my voice; in the morning I prepare a sacrifice for you and watch.", theme: "Lament/Trust" },
+    "2026-07-14": { reference: "2 Timothy 2:22", text: "So flee youthful passions and pursue righteousness, faith, love, and peace, along with those who call on the Lord from a pure heart.", theme: "Encouragement" },
+    "2026-07-15": { reference: "Proverbs 11:3", text: "The integrity of the upright guides them, but the crookedness of the treacherous destroys them.", theme: "Wisdom" },
+    "2026-07-16": { reference: "1 Corinthians 1:9", text: "God is faithful, by whom you were called into the fellowship of his Son, Jesus Christ our Lord.", theme: "Promise" },
+    "2026-07-17": { reference: "1 John 4:21", text: "And this commandment we have from him: whoever loves God must also love his brother.", theme: "Love" },
+    "2026-07-18": { reference: "Psalm 13:6", text: "I will sing to the Lord, because he has dealt bountifully with me.", theme: "Lament/Trust" },
+    "2026-07-19": { reference: "Colossians 2:6-7", text: "Therefore, as you received Christ Jesus the Lord, so walk in him, rooted and built up in him and established in the faith, just as you were taught, abounding in thanksgiving.", theme: "Encouragement" },
+    "2026-07-20": { reference: "Proverbs 17:27", text: "Whoever restrains his words has knowledge, and he who has a cool spirit is a man of understanding.", theme: "Wisdom" },
+    "2026-07-21": { reference: "Hebrews 6:18", text: "so that by two unchangeable things, in which it is impossible for God to lie, we who have fled for refuge might have strong encouragement to hold fast to the hope set before us.", theme: "Promise" },
+    "2026-07-22": { reference: "Romans 1:12", text: "that is, that we may be mutually encouraged by each other's faith, both yours and mine.", theme: "Love" },
+    "2026-07-23": { reference: "Psalm 10:1", text: "Why, O Lord, do you stand far away? Why do you hide yourself in times of trouble?", theme: "Lament/Trust" },
+    "2026-07-24": { reference: "2 Timothy 3:16-17", text: "All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness, that the man of God may be complete, equipped for every good work.", theme: "Encouragement" },
+    "2026-07-25": { reference: "Proverbs 19:21", text: "Many are the plans in the mind of a man, but it is the purpose of the Lord that will stand.", theme: "Wisdom" },
+    "2026-07-26": { reference: "2 Corinthians 5:21", text: "For our sake he made him to be sin who knew no sin, so that in him we might become the righteousness of God.", theme: "Promise" },
+    "2026-07-27": { reference: "Colossians 2:2", text: "that their hearts may be encouraged, being knit together in love, to reach all the riches of full assurance of understanding and the knowledge of God's mystery, which is Christ.", theme: "Love" },
+    "2026-07-28": { reference: "Psalm 119:143", text: "Trouble and anguish have found me out, but your commandments are my delight.", theme: "Lament/Trust" },
+    "2026-07-29": { reference: "Romans 5:3-4", text: "More than that, we rejoice in our sufferings, knowing that suffering produces endurance, and endurance produces character, and character produces hope.", theme: "Encouragement" },
+    "2026-07-30": { reference: "Proverbs 11:29", text: "Whoever troubles his own household will inherit wind, and the fool will be servant to the wise of heart.", theme: "Wisdom" },
+    "2026-07-31": { reference: "Philippians 4:12", text: "I know how to be brought low, and I know how to abound. In any and every circumstance, I have learned the secret of facing plenty and hunger, abundance and need.", theme: "Promise" },
+
+    // --- August 2026 (31 days) ---
+    "2026-08-01": { reference: "1 Corinthians 13:2-3", text: "And if I have prophetic powers, and understand all mysteries and all knowledge, and if I have all faith, so as to remove mountains, but have not love, I am nothing. If I give away all I have, and if I deliver up my body to be burned, but have not love, it profits me nothing.", theme: "Love" },
+    "2026-08-02": { reference: "Psalm 13:5", text: "But I have trusted in your steadfast love; my heart shall rejoice in your salvation.", theme: "Lament/Trust" },
+    "2026-08-03": { reference: "1 Corinthians 1:8-9", text: "who will sustain you to the end, guiltless in the day of our Lord Jesus Christ. God is faithful, by whom you were called into the fellowship of his Son, Jesus Christ our Lord.", theme: "Encouragement" },
+    "2026-08-04": { reference: "Proverbs 13:1", text: "A wise son hears his father's instruction, but a scoffer does not listen to rebuke.", theme: "Wisdom" },
+    "2026-08-05": { reference: "Romans 10:13", text: "For 'everyone who calls on the name of the Lord will be saved.'", theme: "Promise" },
+    "2026-08-06": { reference: "1 John 5:3", text: "For this is the love of God, that we keep his commandments. And his commandments are not burdensome.", theme: "Love" },
+    "2026-08-07": { reference: "Psalm 25:1-2", text: "To you, O Lord, I lift up my soul. O my God, in you I trust; let me not be put to shame; let not my enemies exult over me.", theme: "Lament/Trust" },
+    "2026-08-08": { reference: "Psalm 118:24", text: "This is the day that the Lord has made; let us rejoice and be glad in it.", theme: "Encouragement" },
+    "2026-08-09": { reference: "Proverbs 21:23", text: "Whoever keeps his mouth and his tongue keeps himself out of trouble.", theme: "Wisdom" },
+    "2026-08-10": { reference: "Isaiah 30:18", text: "Therefore the Lord waits to be gracious to you, and therefore he exalts himself to show you mercy. For the Lord is a God of justice; blessed are all those who wait for him.", theme: "Promise" },
+    "2026-08-11": { reference: "Romans 12:13", text: "Contribute to the needs of the saints and seek to show hospitality.", theme: "Love" },
+    "2026-08-12": { reference: "Psalm 102:13", text: "You will arise and have pity on Zion; for it is the time to favor her; the appointed time has come.", theme: "Lament/Trust" },
+    "2026-08-13": { reference: "1 Corinthians 15:57", text: "But thanks be to God, who gives us the victory through our Lord Jesus Christ.", theme: "Encouragement" },
+    "2026-08-14": { reference: "Proverbs 17:22", text: "A joyful heart is good medicine, but a crushed spirit dries up the bones.", theme: "Wisdom" },
+    "2026-08-15": { reference: "Malachi 3:10", text: "Bring the full tithe into the storehouse, that there may be food in my house. And thereby put me to the test, says the Lord of hosts, if I will not open the windows of heaven for you and pour down for you a blessing until there is no more need.", theme: "Promise" },
+    "2026-08-16": { reference: "Galatians 5:22-23", text: "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, self-control; against such things there is no law.", theme: "Love" },
+    "2026-08-17": { reference: "Psalm 61:1-2", text: "Hear my cry, O God, listen to my prayer; from the end of the earth I call to you when my heart is faint. Lead me to the rock that is higher than I.", theme: "Lament/Trust" },
+    "2026-08-18": { reference: "2 Corinthians 6:10", text: "as sorrowful, yet always rejoicing; as poor, yet making many rich; as having nothing, yet possessing everything.", theme: "Encouragement" },
+    "2026-08-19": { reference: "Proverbs 10:1", text: "A wise son makes a glad father, but a foolish son is a sorrow to his mother.", theme: "Wisdom" },
+    "2026-08-20": { reference: "Psalm 146:5", text: "Blessed is he whose help is the God of Jacob, whose hope is in the Lord his God.", theme: "Promise" },
+    "2026-08-21": { reference: "Romans 12:17-18", text: "Repay no one evil for evil, but give thought to do what is honorable in the sight of all. If possible, so far as it depends on you, live peaceably with all.", theme: "Love" },
+    "2026-08-22": { reference: "Psalm 119:28", text: "My soul melts away for sorrow; strengthen me according to your word!", theme: "Lament/Trust" },
+    "2026-08-23": { reference: "Isaiah 43:19", text: "Behold, I am doing a new thing; now it springs forth, do you not perceive it? I will make a way in the wilderness and rivers in the desert.", theme: "Encouragement" },
+    "2026-08-24": { reference: "Proverbs 20:5", text: "The purpose in a man's heart is like deep water, but a man of understanding will draw it out.", theme: "Wisdom" },
+    "2026-08-25": { reference: "Hebrews 4:12", text: "For the word of God is living and active, sharper than any two-edged sword, piercing to the division of soul and of spirit, of joints and of marrow, and discerning the thoughts and intentions of the heart.", theme: "Promise" },
+    "2026-08-26": { reference: "John 15:9", text: "As the Father has loved me, so have I loved you. Abide in my love.", theme: "Love" },
+    "2026-08-27": { reference: "Psalm 70:5", text: "But I am poor and needy; hasten to me, O God! You are my help and my deliverer; O Lord, do not delay!", theme: "Lament/Trust" },
+    "2026-08-28": { reference: "2 Timothy 1:9", text: "who saved us and called us to a holy calling, not because of our works but because of his own purpose and grace, which he gave us in Christ Jesus before the ages began.", theme: "Encouragement" },
+    "2026-08-29": { reference: "Proverbs 12:18", text: "There is one whose rash words are like sword thrusts, but the tongue of the wise brings healing.", theme: "Wisdom" },
+    "2026-08-30": { reference: "Romans 6:23", text: "For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.", theme: "Promise" },
+    "2026-08-31": { reference: "1 John 4:14", text: "And we have seen and testify that the Father has sent his Son to be the Savior of the world.", theme: "Love" },
+
+    // --- September 2026 (30 days) ---
+    "2026-09-01": { reference: "Psalm 94:18-19", text: "When I thought, 'My foot slips,' your steadfast love, O Lord, held me up. When the cares of my heart are many, your consolations cheer my soul.", theme: "Lament/Trust" },
+    "2026-09-02": { reference: "Romans 15:4", text: "For whatever was written in former days was written for our instruction, that through endurance and through the encouragement of the Scriptures we might have hope.", theme: "Encouragement" },
+    "2026-09-03": { reference: "Proverbs 13:3", text: "Whoever guards his mouth preserves his life; he who opens wide his lips comes to ruin.", theme: "Wisdom" },
+    "2026-09-04": { reference: "Ephesians 1:7", text: "In him we have redemption through his blood, the forgiveness of our trespasses, according to the riches of his grace.", theme: "Promise" },
+    "2026-09-05": { reference: "1 Peter 5:14", text: "Greet one another with a kiss of love. Peace to all of you who are in Christ.", theme: "Love" },
+    "2026-09-06": { reference: "Psalm 119:81", text: "My soul longs for your salvation; I hope in your word.", theme: "Lament/Trust" },
+    "2026-09-07": { reference: "Hebrews 3:13", text: "But exhort one another every day, as long as it is called 'today,' that none of you may be hardened by the deceitfulness of sin.", theme: "Encouragement" },
+    "2026-09-08": { reference: "Proverbs 2:7-8", text: "He stores up sound wisdom for the upright; he is a shield to those who walk in integrity, guarding the paths of justice and watching over the way of his saints.", theme: "Wisdom" },
+    "2026-09-09": { reference: "Isaiah 55:11", text: "so shall my word be that goes out from my mouth; it shall not return to me empty, but it shall accomplish that which I purpose, and shall succeed in the thing for which I sent it.", theme: "Promise" },
+    "2026-09-10": { reference: "John 15:17", text: "These things I command you, so that you will love one another.", theme: "Love" },
+    "2026-09-11": { reference: "Psalm 25:16-17", text: "Turn to me and be gracious to me, for I am lonely and afflicted. The troubles of my heart are enlarged; bring me out of my distresses.", theme: "Lament/Trust" },
+    "2026-09-12": { reference: "Ephesians 6:11", text: "Put on the whole armor of God, that you may be able to stand against the schemes of the devil.", theme: "Encouragement" },
+    "2026-09-13": { reference: "Proverbs 12:28", text: "In the path of righteousness is life, and in its pathway there is no death.", theme: "Wisdom" },
+    "2026-09-14": { reference: "Romans 8:1", text: "There is therefore now no condemnation for those who are in Christ Jesus.", theme: "Promise" },
+    "2026-09-15": { reference: "1 John 4:17", text: "By this is love perfected with us, so that we may have confidence for the day of judgment, because as he is so also are we in this world.", theme: "Love" },
+    "2026-09-16": { reference: "Psalm 69:3", text: "I am weary with my crying out; my throat is parched. My eyes grow dim with waiting for my God.", theme: "Lament/Trust" },
+    "2026-09-17": { reference: "1 Corinthians 10:31", text: "So, whether you eat or drink, or whatever you do, do all to the glory of God.", theme: "Encouragement" },
+    "2026-09-18": { reference: "Proverbs 23:19", text: "Hear, my son, and be wise, and direct your heart in the way.", theme: "Wisdom" },
+    "2026-09-19": { reference: "Matthew 7:7", text: "Ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", theme: "Promise" },
+    "2026-09-20": { reference: "Romans 15:1-2", text: "We who are strong have an obligation to bear with the failings of the weak, and not to please ourselves. Let each of us please his neighbor for his good, to build him up.", theme: "Love" },
+    "2026-09-21": { reference: "Psalm 146:7-8", text: "who executes justice for the oppressed, who gives food to the hungry. The Lord sets the prisoners free; the Lord opens the eyes of the blind. The Lord lifts up those who are bowed down; the Lord loves the righteous.", theme: "Lament/Trust" },
+    "2026-09-22": { reference: "Psalm 18:2", text: "The Lord is my rock and my fortress and my deliverer, my God, my rock, in whom I take refuge, my shield, and the horn of my salvation, my stronghold.", theme: "Encouragement" },
+    "2026-09-23": { reference: "Proverbs 24:5-6", text: "A wise man is full of strength, and a man of knowledge enhances power, for by wise guidance you can wage your war, and in abundance of counselors there is victory.", theme: "Wisdom" },
+    "2026-09-24": { reference: "Isaiah 45:22", text: "Turn to me and be saved, all the ends of the earth! For I am God, and there is no other.", theme: "Promise" },
+    "2026-09-25": { reference: "1 John 3:23", text: "And this is his commandment: that we believe in the name of his Son Jesus Christ and love one another, just as he has commanded us.", theme: "Love" },
+    "2026-09-26": { reference: "Psalm 6:2-4", text: "Be gracious to me, O Lord, for I am languishing; heal me, O Lord, for my bones are troubled. My soul also is greatly troubled. But you, O Lord—how long?", theme: "Lament/Trust" },
+    "2026-09-27": { reference: "Ephesians 2:10", text: "For we are his workmanship, created in Christ Jesus for good works, which God prepared beforehand, that we should walk in them.", theme: "Encouragement" },
+    "2026-09-28": { reference: "Proverbs 16:20", text: "Whoever gives thought to the word will discover good, and blessed is he who trusts in the Lord.", theme: "Wisdom" },
+    "2026-09-29": { reference: "Titus 3:5", text: "he saved us, not because of works done by us in righteousness, but according to his own mercy, by the washing of regeneration and renewal of the Holy Spirit.", theme: "Promise" },
+    "2026-09-30": { reference: "1 Corinthians 13:8", text: "Love never ends. As for prophecies, they will pass away; as for tongues, they will cease; as for knowledge, it will pass away.", theme: "Love" },
+
+    // --- October 2026 (31 days) ---
+    "2026-10-01": { reference: "Psalm 60:1-2", text: "O God, you have rejected us, broken our defenses; you have been angry; oh, restore us. You have made the land to quake; you have torn it open; repair its breaches, for it totters.", theme: "Lament/Trust" },
+    "2026-10-02": { reference: "Hebrews 12:2", text: "looking to Jesus, the founder and perfecter of our faith, who for the joy that was set before him endured the cross, despising the shame, and is seated at the right hand of the throne of God.", theme: "Encouragement" },
+    "2026-10-03": { reference: "Proverbs 25:2", text: "It is the glory of God to conceal things, but the glory of kings is to search things out.", theme: "Wisdom" },
+    "2026-10-04": { reference: "1 Timothy 2:5-6", text: "For there is one God, and there is one mediator between God and men, the man Christ Jesus, who gave himself as a ransom for all, which is the testimony given at the proper time.", theme: "Promise" },
+    "2026-10-05": { reference: "Romans 14:15", text: "For if your brother is grieved by what you eat, you are no longer walking by love. Do not destroy the one for whom Christ died by what you eat.", theme: "Love" },
+    "2026-10-06": { reference: "Psalm 42:5", text: "Why are you cast down, O my soul, and why are you disquieted within me? Hope in God, for I shall again praise him, my salvation and my God.", theme: "Lament/Trust" },
+    "2026-10-07": { reference: "1 Peter 5:6", text: "Humble yourselves, therefore, under the mighty hand of God so that at the proper time he may exalt you.", theme: "Encouragement" },
+    "2026-10-08": { reference: "Proverbs 14:3", text: "In the mouth of the foolish is a rod for his back, but the lips of the wise will preserve them.", theme: "Wisdom" },
+    "2026-10-09": { reference: "Isaiah 43:18", text: "“Remember not the former things, nor consider the things of old.”", theme: "Promise" },
+    "2026-10-10": { reference: "Ephesians 4:1-3", text: "I therefore, a prisoner for the Lord, urge you to walk in a manner worthy of the calling to which you have been called, with all humility and gentleness, with patience, bearing with one another in love, eager to maintain the unity of the Spirit in the bond of peace.", theme: "Love" },
+    "2026-10-11": { reference: "Psalm 31:1-2", text: "In you, O Lord, do I take refuge; let me never be put to shame; in your righteousness deliver me! Incline your ear to me; rescue me speedily!", theme: "Lament/Trust" },
+    "2026-10-12": { reference: "1 Peter 4:10-11", text: "As each has received a gift, use it to serve one another, as good stewards of God's varied grace: whoever speaks, as one who speaks oracles of God; whoever serves, as one who serves by the strength that God supplies—in order that in everything God may be glorified through Jesus Christ.", theme: "Encouragement" },
+    "2026-10-13": { reference: "Proverbs 11:27", text: "Whoever diligently seeks good seeks favor, but evil comes to him who searches for it.", theme: "Wisdom" },
+    "2026-10-14": { reference: "John 14:3", text: "And if I go and prepare a place for you, I will come again and will take you to myself, that where I am you may be also.", theme: "Promise" },
+    "2026-10-15": { reference: "Romans 12:20-21", text: "To the contrary, 'if your enemy is hungry, feed him; if he is thirsty, give him something to drink; for by so doing you will heap burning coals on his head.' Do not be overcome by evil, but overcome evil with good.", theme: "Love" },
+    "2026-10-16": { reference: "Psalm 138:7", text: "Though I walk in the midst of trouble, you preserve my life; you stretch out your hand against the wrath of my enemies, and your right hand delivers me.", theme: "Lament/Trust" },
+    "2026-10-17": { reference: "Ephesians 4:23-24", text: "and to be renewed in the spirit of your minds, and to put on the new self, created after the likeness of God in true righteousness and holiness.", theme: "Encouragement" },
+    "2026-10-18": { reference: "Proverbs 24:16", text: "for the righteous falls seven times and rises again, but the wicked stumble in times of calamity.", theme: "Wisdom" },
+    "2026-10-19": { reference: "Psalm 23:1", text: "The Lord is my shepherd; I shall not want.", theme: "Promise" },
+    "2026-10-20": { reference: "1 John 4:9", text: "In this the love of God was made manifest among us, that God sent his only Son into the world, so that we might live through him.", theme: "Love" },
+    "2026-10-21": { reference: "Psalm 107:6", text: "Then they cried to the Lord in their trouble, and he delivered them from their distress.", theme: "Lament/Trust" },
+    "2026-10-22": { reference: "2 Corinthians 4:18", text: "as we look not to the things that are seen but to the things that are unseen. For the things that are seen are transient, but the things that are unseen are eternal.", theme: "Encouragement" },
+    "2026-10-23": { reference: "Proverbs 15:4", text: "A gentle tongue is a tree of life, but perverseness in it breaks the spirit.", theme: "Wisdom" },
+    "2026-10-24": { reference: "Hebrews 11:1", text: "Now faith is the assurance of things hoped for, the conviction of things not seen.", theme: "Promise" },
+    "2026-10-25": { reference: "1 Corinthians 14:1", text: "Pursue love, and earnestly desire the spiritual gifts, especially that you may prophesy.", theme: "Love" },
+    "2026-10-26": { reference: "Psalm 59:16-17", text: "But I will sing of your strength; I will sing aloud of your steadfast love in the morning. For you have been to me a fortress and a refuge in the day of my distress. O my Strength, I will sing praises to you, for you, O God, are my fortress, the God who shows me steadfast love.", theme: "Lament/Trust" },
+    "2026-10-27": { reference: "2 Timothy 4:7-8", text: "I have fought the good fight, I have finished the race, I have kept the faith. Henceforth there is laid up for me the crown of righteousness, which the Lord, the righteous judge, will award to me on that Day, and not only to me but also to all who have loved his appearing.", theme: "Encouragement" },
+    "2026-10-28": { reference: "Proverbs 16:32", text: "Whoever is slow to anger is better than the mighty, and he who rules his spirit than he who takes a city.", theme: "Wisdom" },
+    "2026-10-29": { reference: "John 1:12", text: "But to all who did receive him, who believed in his name, he gave the right to become children of God.", theme: "Promise" },
+    "2026-10-30": { reference: "Romans 15:30", text: "I appeal to you, brothers, by our Lord Jesus Christ and by the love of the Spirit, to strive together with me in your prayers to God for me.", theme: "Love" },
+    "2026-10-31": { reference: "Psalm 127:1", text: "Unless the Lord builds the house, those who build it labor in vain. Unless the Lord watches over the city, the watchman stays awake in vain.", theme: "Lament/Trust" },
+
+    // --- November 2026 (1-24) ---
+    "2026-11-01": { reference: "Philippians 1:9-10", text: "And it is my prayer that your love may abound more and more, with knowledge and all discernment, so that you may approve what is excellent, and so be pure and blameless for the day of Christ.", theme: "Encouragement" },
+    "2026-11-02": { reference: "Proverbs 17:5", text: "Whoever mocks the poor insults his Maker; he who is glad at calamity will not go unpunished.", theme: "Wisdom" },
+    "2026-11-03": { reference: "Romans 5:1", text: "Therefore, since we have been justified by faith, we have peace with God through our Lord Jesus Christ.", theme: "Promise" },
+    "2026-11-04": { reference: "Colossians 3:14-15", text: "And above all these put on love, which binds everything together in perfect harmony. And let the peace of Christ rule in your hearts, to which indeed you were called in one body. And be thankful.", theme: "Love" },
+    "2026-11-05": { reference: "Psalm 46:10", text: "Be still, and know that I am God. I will be exalted among the nations, I will be exalted in the earth!", theme: "Lament/Trust" },
+    "2026-11-06": { reference: "Isaiah 54:17", text: "No weapon that is fashioned against you shall succeed, and you shall confute every tongue that rises against you in judgment. This is the heritage of the servants of the Lord and their vindication from me, declares the Lord.", theme: "Encouragement" },
+    "2026-11-07": { reference: "Proverbs 18:10", text: "The name of the Lord is a strong tower; the righteous man runs into it and is safe.", theme: "Wisdom" },
+    "2026-11-08": { reference: "Hebrews 13:8", text: "Jesus Christ is the same yesterday and today and forever.", theme: "Promise" },
+    "2026-11-09": { reference: "1 John 4:13", text: "By this we know that we abide in him and he in us, because he has given us of his Spirit.", theme: "Love" },
+    "2026-11-10": { reference: "Psalm 139:1-3", text: "O Lord, you have searched me and known me! You know when I sit down and when you rise up; you discern my thoughts from afar. You search out my path and my lying down and are acquainted with all my ways.", theme: "Lament/Trust" },
+    "2026-11-11": { reference: "Philippians 4:8", text: "Finally, brothers, whatever is true, whatever is honorable, whatever is just, whatever is pure, whatever is lovely, whatever is commendable, if there is any excellence, if there is anything worthy of praise, think about these things.", theme: "Encouragement" },
+    "2026-11-12": { reference: "Proverbs 14:30", text: "A tranquil heart gives life to the flesh, but envy makes the bones rot.", theme: "Wisdom" },
+    "2026-11-13": { reference: "Matthew 5:16", text: "In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven.", theme: "Promise" },
+    "2026-11-14": { reference: "Romans 5:7-8", text: "For one will scarcely die for a righteous person—though perhaps for a good person one would dare even to die—but God shows his love for us in that while we were still sinners, Christ died for us.", theme: "Love" },
+    "2026-11-15": { reference: "Psalm 10:18", text: "to do justice to the fatherless and the oppressed, so that man who is of earth may strike terror no more.", theme: "Lament/Trust" },
+    "2026-11-16": { reference: "2 Corinthians 10:5", text: "We destroy arguments and every lofty opinion raised against the knowledge of God, and take every thought captive to obey Christ.", theme: "Encouragement" },
+    "2026-11-17": { reference: "Proverbs 17:17", text: "A friend loves at all times, and a brother is born for adversity.", theme: "Wisdom" },
+    "2026-11-18": { reference: "1 Thessalonians 5:24", text: "He who calls you is faithful; he will surely do it.", theme: "Promise" },
+    "2026-11-19": { reference: "1 Corinthians 13:4", text: "Love is patient and kind; love does not envy or boast...", theme: "Love" },
+    "2026-11-20": { reference: "Psalm 119:50", text: "This is my comfort in my affliction, that your promise gives me life.", theme: "Lament/Trust" },
+    "2026-11-21": { reference: "Hebrews 12:3", text: "Consider him who endured from sinners such hostility against himself, so that you may not grow weary or fainthearted.", theme: "Encouragement" },
+    "2026-11-22": { reference: "Proverbs 20:6", text: "Many a man proclaims his own steadfast love, but a faithful man who can find?", theme: "Wisdom" },
+    "2026-11-23": { reference: "Psalm 32:8", text: "I will instruct you and teach you in the way you should go; I will counsel you with my eye upon you.", theme: "Promise" },
+    "2026-11-24": { reference: "1 Peter 3:8", text: "Finally, all of you, have unity of mind, sympathy, brotherly love, a tender heart, and a humble mind.", theme: "Love" },
+
+    // --- November 2026 (25-30) - (Existing verses from the previous request) ---
+    "2026-11-25": {
+        reference: "Proverbs 2:6",
+        text: "For the Lord gives wisdom; from his mouth come knowledge and understanding.",
+        theme: "Wisdom",
+    },
+    "2026-11-26": {
+        reference: "Romans 10:9",
+        text: "Because, if you confess with your mouth that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved.",
+        theme: "Promise",
+    },
+    "2026-11-27": {
+        reference: "1 John 4:19",
+        text: "We love because he first loved us.",
+        theme: "Love",
+    },
+    "2026-11-28": {
+        reference: "Psalm 119:105",
+        text: "Your word is a lamp to my feet and a light to my path.",
+        theme: "Wisdom",
+    },
+    "2026-11-29": {
+        reference: "Psalm 55:22",
+        text: "Cast your burden on the Lord, and he will sustain you; he will never permit the righteous to be moved.",
+        theme: "Lament/Trust",
+    },
+    "2026-11-30": {
+        reference: "1 Corinthians 16:13",
+        text: "Be watchful, stand firm in the faith, act like men, be strong.",
+        theme: "Encouragement",
+    },
+
+    // --- December 2026 - (Existing verses from the previous request) ---
+    "2026-12-01": {
+        reference: "Proverbs 15:33",
+        text: "The fear of the Lord is instruction in wisdom, and humility comes before honor.",
+        theme: "Wisdom",
+    },
+    "2026-12-02": {
+        reference: "2 Corinthians 1:20",
+        text: "For all the promises of God find their Yes in him. That is why it is through him that we utter our Amen to God for his glory.",
+        theme: "Promise",
+    },
+    "2026-12-03": {
+        reference: "Ephesians 4:2-3",
+        text: "with all humility and gentleness, with patience, bearing with one another in love, eager to maintain the unity of the Spirit in the bond of peace.",
+        theme: "Love",
+    },
+    "2026-12-04": {
+        reference: "Psalm 23:4",
+        text: "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-05": {
+        reference: "Isaiah 40:31",
+        text: "but they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.",
+        theme: "Encouragement",
+    },
+    "2026-12-06": {
+        reference: "Proverbs 22:6",
+        text: "Train up a child in the way he should go; even when he is old he will not depart from it.",
+        theme: "Wisdom",
+    },
+    "2026-12-07": {
+        reference: "Psalm 91:4",
+        text: "He will cover you with his pinions, and under his wings you will find refuge; his faithfulness is a shield and buckler.",
+        theme: "Promise",
+    },
+    "2026-12-08": {
+        reference: "John 15:13",
+        text: "Greater love has no one than this, that someone lay down his life for his friends.",
+        theme: "Love",
+    },
+    "2026-12-09": {
+        reference: "Psalm 18:6",
+        text: "In my distress I called upon the Lord; to my God I cried for help. From his temple he heard my voice, and my cry to him reached his ears.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-10": {
+        reference: "Romans 15:13",
+        text: "May the God of hope fill you with all joy and peace in believing, so that by the power of the Holy Spirit you may abound in hope.",
+        theme: "Encouragement",
+    },
+    "2026-12-11": {
+        reference: "Proverbs 14:29",
+        text: "Whoever is slow to anger has great understanding, but he who has a hasty temper exalts folly.",
+        theme: "Wisdom",
+    },
+    "2026-12-12": {
+        reference: "Matthew 6:33",
+        text: "But seek first the kingdom of God and his righteousness, and all these things will be added to you.",
+        theme: "Promise",
+    },
+    "2026-12-13": {
+        reference: "1 Peter 4:8",
+        text: "Above all, keep loving one another earnestly, since love covers a multitude of sins.",
+        theme: "Love",
+    },
+    "2026-12-14": {
+        reference: "Psalm 34:17",
+        text: "When the righteous cry for help, the Lord hears and delivers them out of all their troubles.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-15": {
+        reference: "2 Corinthians 5:7",
+        text: "for we walk by faith, not by sight.",
+        theme: "Encouragement",
+    },
+    "2026-12-16": {
+        reference: "Proverbs 13:20",
+        text: "Whoever walks with the wise becomes wise, but the companion of fools will suffer harm.",
+        theme: "Wisdom",
+    },
+    "2026-12-17": {
+        reference: "2 Peter 3:9",
+        text: "The Lord is not slow to fulfill his promise as some count slowness, but is patient toward you, not wishing that any should perish, but that all should reach repentance.",
+        theme: "Promise",
+    },
+    "2026-12-18": {
+        reference: "1 John 3:18",
+        text: "Little children, let us not love in word or talk but in deed and in truth.",
+        theme: "Love",
+    },
+    "2026-12-19": {
+        reference: "Psalm 13:5-6",
+        text: "But I have trusted in your steadfast love; my heart shall rejoice in your salvation. I will sing to the Lord, because he has dealt bountifully with me.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-20": {
+        reference: "Romans 8:31",
+        text: "What then shall we say to these things? If God is for us, who can be against us?",
+        theme: "Encouragement",
+    },
+    "2026-12-21": {
+        reference: "Proverbs 17:28",
+        text: "Even a fool who keeps silent is considered wise; when he closes his lips, he is deemed intelligent.",
+        theme: "Wisdom",
+    },
+    "2026-12-22": {
+        reference: "John 14:27",
+        text: "Peace I leave with you; my peace I give to you. Not as the world gives do I give to you. Let not your hearts be troubled, neither let them be afraid.",
+        theme: "Promise",
+    },
+    "2026-12-23": {
+        reference: "John 13:34-35",
+        text: "A new commandment I give to you, that you love one another: just as I have loved you, you also are to love one another. By this all people will know that you are my disciples, if you have love for one another.",
+        theme: "Love",
+    },
+    "2026-12-24": {
+        reference: "Psalm 73:26",
+        text: "My flesh and my heart may fail, but God is the strength of my heart and my portion forever.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-25": {
+        reference: "Isaiah 9:6",
+        text: "For to us a child is born, to us a son is given; and the government shall be upon his shoulder, and his name shall be called Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace.",
+        theme: "Encouragement",
+    },
+    "2026-12-26": {
+        reference: "Proverbs 10:19",
+        text: "When words are many, transgression is not lacking, but whoever restrains his lips is prudent.",
+        theme: "Wisdom",
+    },
+    "2026-12-27": {
+        reference: "Joel 2:25",
+        text: "I will restore to you the years that the swarming locust has eaten, the hopper, the destroyer, and the cutter, my great army which I sent among you.",
+        theme: "Promise",
+    },
+    "2026-12-28": {
+        reference: "Ephesians 5:2",
+        text: "And walk in love, as Christ loved us and gave himself up for us, a fragrant offering and sacrifice to God.",
+        theme: "Love",
+    },
+    "2026-12-29": {
+        reference: "Psalm 16:8",
+        text: "I have set the Lord always before me; because he is at my right hand, I shall not be shaken.",
+        theme: "Lament/Trust",
+    },
+    "2026-12-30": {
+        reference: "James 4:7",
+        text: "Submit yourselves therefore to God. Resist the devil, and he will flee from you.",
+        theme: "Encouragement",
+    },
+    "2026-12-31": {
+        reference: "Psalm 33:10-11",
+        text: "The Lord brings the counsel of the nations to nothing; he makes the plans of the peoples to no effect. The counsel of the Lord stands forever, the plans of his heart to all generations.",
+        theme: "Wisdom",
+    },
+            // You can continue adding verses for the entire year here...
+            // e.g., "2026-01-01": { reference: "Genesis 1:1", text: "In the beginning..." },
+            // ...
+        };
+        // ----------------------------------------
+
+        // Utility function to format the date
+        function formatDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString(undefined, options);
+        }
+
+        // Main function to load and display the verse
+        function displayVerseOfTheDay() {
+            const today = new Date();
+            // Format the date to "YYYY-MM-DD" key used in the data structure
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayKey = `${yyyy}-${mm}-${dd}`;
+
+            const verse = dailyVerses[todayKey];
+            
+            const dateElement = document.getElementById('current-date');
+            const referenceElement = document.getElementById('verse-reference');
+            const textElement = document.getElementById('verse-text');
+            
+            // Display the current date
+            dateElement.textContent = formatDate(today);
+
+            if (verse) {
+                // If a verse is found for today's date
+                referenceElement.textContent = verse.reference;
+                textElement.textContent = verse.text;
+            } else {
+                // Fallback message if no verse is set for the current date
+                referenceElement.textContent = "Verse Not Found";
+                textElement.textContent = "Please add a verse for today's date in the dailyVerses list using the format: \"" + todayKey + "\".";
+                textElement.classList.add('text-red-500', 'text-xl');
+            }
+        }
+
+        // Run the function when the page loads
+        document.addEventListener('DOMContentLoaded', displayVerseOfTheDay);
+    </script>
+</body>
+</html>
